@@ -212,14 +212,16 @@ def calculate_last_force(F):
     f_inner.phi = angle_finder(cos_val, sin_val)
     
     f_tang.magnitude = sqrt(x_component_tang**2 + y_component_tang**2)
-    - x_component_tang 
-    - y_component_tang 
-    f_tang.phi = 
+    cos_val = (x_component_tang*x_component_inner + y_component_tang*y_component_inner)/sqrt((
+        x_component_inner**2 + y_component_inner**2)*(x_component_tang**2 + y_component_tang**2))
+    sin_val = (x_component_tang*y_component_inner+y_component_tang*x_component_inner)/sqrt((
+        x_component_inner**2 + y_component_inner**2)*(x_component_tang**2 + y_component_tang**2)) 
+    f_tang.phi = angle_finder(cos_val, sin_val)
     
     f_last.magnitude = sqrt(f_tang.get_mag()**2 + f_inner.get_mag()**2)
     f_last.phi = f_inner.get_phi()
-    f_last.alpha = f_tang.get_alpha()
-    return f
+    f_last.alpha = f_tang.get_phi()
+    return f_last
         
 def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, num_random, f_lower_bound, f_upper_bound):
     '''This function generates list of lists of forces,
@@ -252,13 +254,8 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
             F_list.append(f_last)
             check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f
                      in F_list[:-1]] + [(f.get_alpha()<=pi/2 or f.get_alpha()>=3*pi/2) for f in F_list]
-            print('Force alpha list: ', [f.get_alpha() for f in F_list])
-            print('Force phi list: ', [f.get_phi() for f in F_list])
-            print(check)
             attempt_count+=1
-            print(attempt_count)
             if all(check):
-                print('Success')
                 shift_tang_ang = np.amin(np.array([(pi/2 - f.get_alpha()) 
                                                    if f.get_alpha() <= pi/2 
                                                    else (f.get_alpha() - 3*pi/2)
