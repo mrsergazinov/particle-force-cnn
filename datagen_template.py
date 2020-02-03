@@ -50,7 +50,6 @@ class Force:
     def unit_force_vector_xy(self):
         angle_from_x = self.direction_angle_xy
         return np.cos(angle_from_x), np.sin(angle_from_x)
-    
     def get_mag(self):
         return self.magnitude
     def get_phi(self):
@@ -63,7 +62,7 @@ def force_impact_point_xy(particle, force):
         Returns the xy coordinates of the point at which the force acts 
         on the particle
     """
-    x = particle.radius * np.cos(force.phi)
+    x = particle.radius * np.cos(force.phi) 
     y = particle.radius * np.sin(force.phi)
     return x, y
 
@@ -187,41 +186,69 @@ def angle_finder(cos_val, sin_val):
         true_angle = asin(sin_val) + 2*pi
     return true_angle
 
-def calculate_last_force(F):
+def calculate_last_force(F, alpha_init, alpha_std_dev):
     '''Given list of forces, the function outputs the last force, based on balance equations'''
-    f_tang = Force()
-    f_inner = Force()
+# =============================================================================
+#     f_tang = Force()
+#     f_inner = Force()
+#     f_last = Force()
+#     
+#     x_component_tang = 0
+#     y_component_tang = 0
+#     
+#     x_component_inner = 0
+#     y_component_inner = 0
+#     
+#     for f in F:
+#         x_component_inner += f.get_mag()*cos(f.get_alpha())*cos(f.get_phi()+pi)
+#         y_component_inner += f.get_mag()*cos(f.get_alpha())*sin(f.get_phi()+pi)
+#         
+#         if f.get_alpha() >= pi:
+#             x_component_tang += f.get_mag()*sin(2*pi - f.get_alpha())*cos(f.get_phi()+pi/2)
+#             y_component_tang += f.get_mag()*sin(2*pi - f.get_alpha())*sin(f.get_phi()+pi/2)
+#         else:
+#             x_component_tang += f.get_mag()*sin(f.get_alpha())*cos(f.get_phi()-pi/2)
+#             y_component_tang += f.get_mag()*sin(f.get_alpha())*sin(f.get_phi()-pi/2)
+#     
+#     f_inner.magnitude = sqrt(x_component_inner**2 + y_component_inner**2)
+#     cos_val = - x_component_inner / f_inner.get_mag()
+#     sin_val = - y_component_inner / f_inner.get_mag()
+#     f_inner.phi = (angle_finder(cos_val, sin_val)+pi)%(2*pi)
+# 
+#     
+#     f_tang.magnitude = sqrt(x_component_tang**2 + y_component_tang**2)
+#     if f_tang.get_mag() != 0:
+#         cos_val = (x_component_tang*x_component_inner + y_component_tang*y_component_inner)/(
+#             f_tang.get_mag()*f_inner.get_mag())
+#         sin_val = (-x_component_tang*y_component_inner + y_component_tang*x_component_inner)/(
+#             f_tang.get_mag()*f_inner.get_mag()) 
+#         f_tang.phi = angle_finder(cos_val, sin_val)
+#     else:
+#         f_tang.phi = 0
+#     
+#     f_last.magnitude = sqrt(f_tang.get_mag()**2 + f_inner.get_mag()**2)
+#     f_last.phi = f_inner.get_phi()
+#     f_last.alpha = f_tang.get_phi()
+# =============================================================================
     f_last = Force()
-    
-    x_component_tang = 0
-    y_component_tang = 0
-    
-    x_component_inner = 0
-    y_component_inner = 0
-    
+    f_last.alpha = np.random.normal(alpha_init, alpha_std_dev)
+    x, y = 0, 0    
     for f in F:
-        x_component_inner += f.get_mag()*cos(f.get_alpha())*cos(f.get_phi())
-        y_component_inner += f.get_mag()*cos(f.get_alpha())*sin(f.get_phi())
-        
-        x_component_tang += f.get_mag()*sin(f.get_alpha())*cos(f.get_phi()+pi/2)
-        y_component_tang += f.get_mag()*sin(f.get_alpha())*sin(f.get_phi()+pi/2)
+        x -= f.get_mag()*cos(f.direction_angle_xy)
+        y -= f.get_mag()*sin(f.direction_angle_xy)
+    f_last.magnitude = sqrt(x**2 + y**2)    
+    f_last.phi = (angle_finder(x/f_last.get_mag() ,y/f_last.get_mag()) - pi - f_last.get_alpha())%(2*pi)
     
-    f_inner.magnitude = sqrt(x_component_inner**2 + y_component_inner**2)
-    cos_val = - x_component_inner / f_inner.get_mag()
-    sin_val = - y_component_inner / f_inner.get_mag()
-    f_inner.phi = angle_finder(cos_val, sin_val)
-    
-    f_tang.magnitude = sqrt(x_component_tang**2 + y_component_tang**2)
-    cos_val = (x_component_tang*x_component_inner + y_component_tang*y_component_inner)/sqrt((
-        x_component_inner**2 + y_component_inner**2)*(x_component_tang**2 + y_component_tang**2))
-    sin_val = (x_component_tang*y_component_inner+y_component_tang*x_component_inner)/sqrt((
-        x_component_inner**2 + y_component_inner**2)*(x_component_tang**2 + y_component_tang**2)) 
-    f_tang.phi = angle_finder(cos_val, sin_val)
-    
-    f_last.magnitude = sqrt(f_tang.get_mag()**2 + f_inner.get_mag()**2)
-    f_last.phi = f_inner.get_phi()
-    f_last.alpha = f_tang.get_phi()
     return f_last
+
+def check_balance(F):
+    '''Given list of forces, the function outputs the last force, based on balance equations'''
+    x,y = 0,0
+    for f in F:
+        x += f.get_mag()*cos(f.direction_angle_xy)
+        y += f.get_mag()*sin(f.direction_angle_xy)
+    print(x, y)
+    return None
         
 def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, num_random, f_lower_bound, f_upper_bound):
     '''This function generates list of lists of forces,
@@ -232,46 +259,37 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
     delta = pi/6
     shift = 2 * pi / num_forces
     epsilon = pi/(2*num_angles_inner)
-    ksi = 0
     
     phi_init = 0   
-    alpha_init = 2*pi 
+    alpha_init = 0
     alpha_std_dev = pi/6
     
-    max_attempts = 20
-    #10**6
+    max_attempts = 10**6
     for mag in np.linspace(f_lower_bound, f_upper_bound, num_mags):
-        attempt_count = 0
-        while attempt_count < max_attempts:
-            F_list = []
-            for i in range(num_forces-1):
-                f_mag = abs(np.random.normal(mag, mag/5))
-                f_phi = np.random.uniform(phi_init+i*shift+delta, 
-                                        phi_init+i*shift+shift-delta)%(2*pi)
-                f_alpha = np.random.normal(alpha_init, alpha_std_dev)%(2*pi)
-                F_list.append(Force(f_mag, f_phi, f_alpha))
-            f_last = calculate_last_force(F_list)
-            F_list.append(f_last)
-            check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f
-                     in F_list[:-1]] + [(f.get_alpha()<=pi/2 or f.get_alpha()>=3*pi/2) for f in F_list]
-            attempt_count+=1
-            if all(check):
-                shift_tang_ang = np.amin(np.array([(pi/2 - f.get_alpha()) 
-                                                   if f.get_alpha() <= pi/2 
-                                                   else (f.get_alpha() - 3*pi/2)
-                                                   for f in F_list]))
-                ksi = shift_tang_ang / (2*num_angles_tang)
-                
-                for ang_inner in range(num_angles_inner):
-                    for ang_tang in range(num_angles_tang):
-                        F_list_new = [Force(f.get_mag(), (f.get_phi()+ang_inner*epsilon)%(2*pi), (f.get_alpha()-ang_tang*ksi)%(2*pi)) 
-                                      if f.get_alpha()>=3*pi/2 
-                                      else Force(f.get_mag(), (f.get_phi()+ang_inner*epsilon)%(2*pi), (f.get_alpha()+ang_tang*ksi)%(2*pi))
+        for i in range(num_angles_tang):
+            attempt_count = 0
+            while attempt_count < max_attempts:
+                F_list = []
+                for i in range(num_forces-1):
+                    f_mag = abs(np.random.normal(mag, mag/5))
+                    f_phi = np.random.uniform(phi_init+i*shift+delta, 
+                                            phi_init+i*shift+shift-delta)%(2*pi)
+                    f_alpha = np.random.normal(alpha_init, alpha_std_dev)
+                    F_list.append(Force(f_mag, f_phi, f_alpha))
+                f_last = calculate_last_force(F_list, alpha_init, alpha_std_dev)
+                F_list.append(f_last)
+                check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f
+                         in F_list[:-1]] + [(f.get_alpha()<=pi/2 or f.get_alpha()>=-pi/2) for f in F_list]
+                attempt_count+=1
+                print(attempt_count)
+                if all(check):    
+                    for ang_inner in range(num_angles_inner):
+                        F_list_new = [Force(f.get_mag(), (f.get_phi()+ang_inner*epsilon)%(2*pi), f.get_alpha())
                                       for f in F_list]
                         for rand in range(num_random):
                             list_of_F_lists.append(F_list_new)   
-                            
-                attempt_count = max_attempts
+                    attempt_count = max_attempts
+    
     return list_of_F_lists
 
 def image_gen(F):
@@ -312,7 +330,7 @@ if __name__ == '__main__':
     #num pixles in image *2
     n_pixels_per_radius = 28
     #num forces
-    num_forces = 3
+    num_forces = 5
     
     #multiprocessing with 4 processes
     num_processes = cpu_count()
