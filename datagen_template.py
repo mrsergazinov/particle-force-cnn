@@ -233,6 +233,8 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
     phi_init = 0   
     alpha_init = 0
     alpha_std_dev = pi/12
+    #the std. dev was chosen so that alpha stays within -pi/4 to pi/4, which is
+    #needed because |f_tang| < |f_inner| due to physical constraints
     
     max_attempts = 10**6
     for mag in np.linspace(f_lower_bound, f_upper_bound, num_mags):
