@@ -50,6 +50,7 @@ class Force:
     def unit_force_vector_xy(self):
         angle_from_x = self.direction_angle_xy
         return np.cos(angle_from_x), np.sin(angle_from_x)
+    
     def get_mag(self):
         return self.magnitude
     def get_phi(self):
@@ -188,57 +189,26 @@ def angle_finder(cos_val, sin_val):
 
 def calculate_last_force(F, alpha_init, alpha_std_dev):
     '''Given list of forces, the function outputs the last force, based on balance equations'''
-# =============================================================================
-#     f_tang = Force()
-#     f_inner = Force()
-#     f_last = Force()
-#     
-#     x_component_tang = 0
-#     y_component_tang = 0
-#     
-#     x_component_inner = 0
-#     y_component_inner = 0
-#     
-#     for f in F:
-#         x_component_inner += f.get_mag()*cos(f.get_alpha())*cos(f.get_phi()+pi)
-#         y_component_inner += f.get_mag()*cos(f.get_alpha())*sin(f.get_phi()+pi)
-#         
-#         if f.get_alpha() >= pi:
-#             x_component_tang += f.get_mag()*sin(2*pi - f.get_alpha())*cos(f.get_phi()+pi/2)
-#             y_component_tang += f.get_mag()*sin(2*pi - f.get_alpha())*sin(f.get_phi()+pi/2)
-#         else:
-#             x_component_tang += f.get_mag()*sin(f.get_alpha())*cos(f.get_phi()-pi/2)
-#             y_component_tang += f.get_mag()*sin(f.get_alpha())*sin(f.get_phi()-pi/2)
-#     
-#     f_inner.magnitude = sqrt(x_component_inner**2 + y_component_inner**2)
-#     cos_val = - x_component_inner / f_inner.get_mag()
-#     sin_val = - y_component_inner / f_inner.get_mag()
-#     f_inner.phi = (angle_finder(cos_val, sin_val)+pi)%(2*pi)
-# 
-#     
-#     f_tang.magnitude = sqrt(x_component_tang**2 + y_component_tang**2)
-#     if f_tang.get_mag() != 0:
-#         cos_val = (x_component_tang*x_component_inner + y_component_tang*y_component_inner)/(
-#             f_tang.get_mag()*f_inner.get_mag())
-#         sin_val = (-x_component_tang*y_component_inner + y_component_tang*x_component_inner)/(
-#             f_tang.get_mag()*f_inner.get_mag()) 
-#         f_tang.phi = angle_finder(cos_val, sin_val)
-#     else:
-#         f_tang.phi = 0
-#     
-#     f_last.magnitude = sqrt(f_tang.get_mag()**2 + f_inner.get_mag()**2)
-#     f_last.phi = f_inner.get_phi()
-#     f_last.alpha = f_tang.get_phi()
-# =============================================================================
+
     f_last = Force()
-    f_last.alpha = np.random.normal(alpha_init, alpha_std_dev)
-    x, y = 0, 0    
-    for f in F:
-        x -= f.get_mag()*cos(f.direction_angle_xy)
-        y -= f.get_mag()*sin(f.direction_angle_xy)
-    f_last.magnitude = sqrt(x**2 + y**2)    
-    f_last.phi = (angle_finder(x/f_last.get_mag() ,y/f_last.get_mag()) - pi - f_last.get_alpha())%(2*pi)
     
+    x_component_inner, y_component_inner = 0, 0
+    inner_magnitude = 0
+    tang_component = 0
+    
+    for f in F:
+        x_component_inner -= f.get_mag()*cos(f.get_alpha())*cos(f.get_phi()+pi)
+        y_component_inner -= f.get_mag()*cos(f.get_alpha())*sin(f.get_phi()+pi)
+        tang_component -= f.get_mag()*sin(f.get_alpha())
+        
+    inner_magnitude = sqrt(x_component_inner**2 + y_component_inner**2)
+    cos_val = x_component_inner / inner_magnitude
+    sin_val = y_component_inner / inner_magnitude
+    
+    f_last.magnitude = sqrt(inner_magnitude**2 + tang_component**2)
+    f_last.phi = (angle_finder(cos_val, sin_val)+pi)%(2*pi)
+    f_last.alpha = asin(tang_component/f_last.get_mag())
+
     return f_last
 
 def check_balance(F):
@@ -262,7 +232,7 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
     
     phi_init = 0   
     alpha_init = 0
-    alpha_std_dev = pi/6
+    alpha_std_dev = pi/12
     
     max_attempts = 10**6
     for mag in np.linspace(f_lower_bound, f_upper_bound, num_mags):
@@ -279,9 +249,9 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                 f_last = calculate_last_force(F_list, alpha_init, alpha_std_dev)
                 F_list.append(f_last)
                 check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f
-                         in F_list[:-1]] + [(f.get_alpha()<=pi/2 or f.get_alpha()>=-pi/2) for f in F_list]
+                         in F_list[:-1]] + [(f.get_alpha()<=pi/4 or f.get_alpha()>=-pi/4) for f in F_list]
                 attempt_count+=1
-                print(attempt_count)
+                
                 if all(check):    
                     for ang_inner in range(num_angles_inner):
                         F_list_new = [Force(f.get_mag(), (f.get_phi()+ang_inner*epsilon)%(2*pi), f.get_alpha())
@@ -325,8 +295,8 @@ if __name__ == '__main__':
     #number of different magnitudes for forces
     num_mags = 3
     #number of different angles 
-    num_angles_inner = 2
-    num_angles_tang = 3
+    num_angles_inner = 3
+    num_angles_tang = 2
     #num pixles in image *2
     n_pixels_per_radius = 28
     #num forces
