@@ -251,7 +251,7 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                 f_last = calculate_last_force(F_list, alpha_init, alpha_std_dev)
                 F_list.append(f_last)
                 check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f
-                         in F_list[:-1]] + [(f.get_alpha()<=pi/4 or f.get_alpha()>=-pi/4) for f in F_list]
+                         in F_list[:-1]] + [(f.get_alpha()<=pi/4 and f.get_alpha()>=-pi/4) for f in F_list]
                 attempt_count+=1
                 
                 if all(check):    
@@ -293,7 +293,7 @@ if __name__ == '__main__':
     num_random = 1
     #max/min number of forces
     max_num_forces = 6
-    min_num_forces = 4
+    min_num_forces = 2
     #number of different magnitudes for forces
     num_mags = 3
     #number of different angles 
@@ -302,7 +302,7 @@ if __name__ == '__main__':
     #num pixles in image *2
     n_pixels_per_radius = 28
     #num forces
-    num_forces = 5
+    num_forces = 3
     
     #multiprocessing with 4 processes
     num_processes = cpu_count()
