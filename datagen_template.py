@@ -287,7 +287,7 @@ def image_gen(F):
 
 if __name__ == '__main__':
     #max/min magnitude for force
-    lower_bound = 0.01
+    lower_bound = 0.2
     upper_bound = 0.4
     #number of randomly noised pictures for each force selection
     num_random = 1
@@ -297,12 +297,12 @@ if __name__ == '__main__':
     #number of different magnitudes for forces
     num_mags = 3
     #number of different angles 
-    num_angles_inner = 3
-    num_angles_tang = 2
+    num_angles_inner = 1
+    num_angles_tang = 1
     #num pixles in image *2
     n_pixels_per_radius = 28
     #num forces
-    num_forces = 3
+    num_forces = 2
     
     #multiprocessing with 4 processes
     num_processes = cpu_count()
@@ -317,8 +317,8 @@ if __name__ == '__main__':
     
 
     fig = plt.figure(figsize = (25, 25))
-    for i in range(18):
-        fig.add_subplot(6, 3, i+1)
+    for i in range(3):
+        fig.add_subplot(1, 3, i+1)
         plt.imshow(np.asarray(data[i,:,:]), vmin= 0, vmax = 1, cmap='gray')
         
 # =============================================================================
