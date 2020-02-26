@@ -17,9 +17,11 @@ from multiprocessing import Pool, cpu_count
 import matplotlib.pyplot as plt
 
 class Particle:
-    def __init__(self, radius=1, height=1):
+    def __init__(self, x, y, radius=1, height=1):
         self.radius = radius
         self.height = height
+        self.x = x
+        self.y = y
 
 """
 Each force acting on this particle at its boundary is described by three variables 
@@ -142,38 +144,28 @@ def photo_elastic_response_at_xy(x, y, particle, forces, f_sigma, cutoff=np.inf)
     return photo_elastic_response_from_stress(sigma_xx, sigma_xy, sigma_yy, f_sigma)
 
 
-def photo_elastic_response_on_particle(particle, forces, f_sigma, pixels_per_radius, cutoff=np.inf):
+def photo_elastic_response_on_particle(canvas, x_min, y_max, avg_radius, particle, forces, f_sigma, pixels_per_radius, cutoff=np.inf):
     '''Function computes photoelastic reponse at each point'''
-    photo_elastic_response = np.zeros((2 * pixels_per_radius, 2 * pixels_per_radius))
     pixel_to_coordinate = np.linspace(-particle.radius, particle.radius, 2 * pixels_per_radius)
     radius_sqr = np.square(particle.radius)
     
     for i in np.arange(2 * pixels_per_radius):
         for j in np.arange(2 * pixels_per_radius):
             if np.square(pixel_to_coordinate[i]) + np.square(pixel_to_coordinate[j]) < radius_sqr:
-                photo_elastic_response[i, j] = photo_elastic_response_at_xy(pixel_to_coordinate[i], pixel_to_coordinate[j], particle, forces, f_sigma, cutoff)
-            else:
-                photo_elastic_response[i, j] = 0
-    return photo_elastic_response
+                x = np.ceil(particle.x + pixel_to_coordinate[i] - x_min)
+                y = np.ceil(particle.y + pixel_to_coordinate[j] - y_min)
+                
+                canvas[x, y] = photo_elastic_response_at_xy(pixel_to_coordinate[i], pixel_to_coordinate[j], particle, forces, f_sigma, cutoff)
+    return canvas
 
-def test(particle, force, f_sigma, pixels_per_radius, cutoff=np.inf):
-    t = np.zeros((2 * pixels_per_radius, 2 * pixels_per_radius))
-    pixel_to_coordinate = np.linspace(-particle.radius, particle.radius, 2 * pixels_per_radius)
-    radius_sqr = np.square(particle.radius)
-    for i in np.arange(2 * pixels_per_radius):
-        for j in np.arange(2 * pixels_per_radius):
-            if np.square(pixel_to_coordinate[i]) + np.square(pixel_to_coordinate[j]) < radius_sqr:
-                r, p = xy_to_f_polar(pixel_to_coordinate[i], pixel_to_coordinate[j], particle, force)
-                st = stress_tensor_rr_in_f_polar(r, p, particle, force, cutoff)
-                # t[i, j] = r
-                # t[i, j] = phi
-                #t[i, j] = stress_tensor_rr_in_f_polar(r, p, particle, force)
-                xx,xy,yy =transform_stress_tensor_in_f_polar_to_xy(st, p, force)
-                t[i,j] = st
-            else:
-                t[i, j] = 0
-    return t
-
+def create_canvas(df_xy, pixels_per_radius):
+    max_radius = df_xy['r'].max()
+    x_min, x_max,  = df_xy['x'].min()-max_radius, df_xy['x'].max()+max_radius,
+    y_min, y_max = df_xy['y'].min()-max_radius, df_xy['y'].max()+max_radius
+    canvas = np.zeros(int(np.ceil((x_max-x_min)*pixels_per_radius/max_radius)), 
+                      int(np.ceil((y_max-y_min)*pixels_per_radius/max_radius)))
+    return canvas, x_min, y_max, max_radius
+    
 def angle_finder(cos_val, sin_val):
     '''This function gives the value of the angle in radians from 
     the sin and cos values'''
@@ -186,104 +178,6 @@ def angle_finder(cos_val, sin_val):
     elif sin_val < 0 and cos_val >= 0:
         true_angle = asin(sin_val) + 2*pi
     return true_angle
-
-def calculate_last_force(F, alpha_init, alpha_std_dev):
-    '''Given list of forces, the function outputs the last force, based on balance equations'''
-
-    f_last = Force()
-    
-    x_component_inner, y_component_inner = 0, 0
-    inner_magnitude = 0
-    tang_component = 0
-    
-    for f in F:
-        x_component_inner -= f.get_mag()*cos(f.get_alpha())*cos(f.get_phi()+pi)
-        y_component_inner -= f.get_mag()*cos(f.get_alpha())*sin(f.get_phi()+pi)
-        tang_component -= f.get_mag()*sin(f.get_alpha())
-        
-    inner_magnitude = sqrt(x_component_inner**2 + y_component_inner**2)
-    cos_val = x_component_inner / inner_magnitude
-    sin_val = y_component_inner / inner_magnitude
-    
-    f_last.magnitude = sqrt(inner_magnitude**2 + tang_component**2)
-    f_last.phi = (angle_finder(cos_val, sin_val)+pi)%(2*pi)
-    f_last.alpha = asin(tang_component/f_last.get_mag())
-
-    return f_last
-
-def check_balance(F):
-    '''Given list of forces, the function outputs the last force, based on balance equations'''
-    x,y = 0,0
-    for f in F:
-        x += f.get_mag()*cos(f.direction_angle_xy)
-        y += f.get_mag()*sin(f.direction_angle_xy)
-    print(x, y)
-    return None
-        
-def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, num_random, f_lower_bound, f_upper_bound):
-    '''This function generates list of lists of forces,
-    such that the lists have num_forces forces, num_mags different force magnitudes, num_angles different angles, and
-    each list is repeated num_random time'''
-    list_of_F_lists = []
-    
-    delta = pi/6
-    shift = 2 * pi / num_forces
-    epsilon = pi/(2*num_angles_inner)
-    
-    phi_init = 0   
-    alpha_init = 0
-    alpha_std_dev = pi/12
-    #the std. dev was chosen so that alpha stays within -pi/4 to pi/4, which is
-    #needed because |f_tang| < |f_inner| due to physical constraints
-    
-    max_attempts = 10**6
-    for mag in np.linspace(f_lower_bound, f_upper_bound, num_mags):
-        for i in range(num_angles_tang):
-            attempt_count = 0
-            while attempt_count < max_attempts:
-                F_list = []
-                for i in range(num_forces-1):
-                    f_mag = abs(np.random.normal(mag, mag/5))
-                    f_phi = np.random.uniform(phi_init+i*shift+delta, 
-                                            phi_init+i*shift+shift-delta)%(2*pi)
-                    f_alpha = np.random.normal(alpha_init, alpha_std_dev)
-                    F_list.append(Force(f_mag, f_phi, f_alpha))
-                f_last = calculate_last_force(F_list, alpha_init, alpha_std_dev)
-                F_list.append(f_last)
-                check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f
-                         in F_list[:-1]] + [(f.get_alpha()<=pi/4 and f.get_alpha()>=-pi/4) for f in F_list]
-                attempt_count+=1
-                
-                if all(check):    
-                    for ang_inner in range(num_angles_inner):
-                        F_list_new = [Force(f.get_mag(), (f.get_phi()+ang_inner*epsilon)%(2*pi), f.get_alpha())
-                                      for f in F_list]
-                        for rand in range(num_random):
-                            list_of_F_lists.append(F_list_new)   
-                    attempt_count = max_attempts
-    
-    return list_of_F_lists
-
-def image_gen(F):
-    '''Function generates image based on list of forces'''
-    # particle
-    p = Particle(1, 0.1)
-    # material constant
-    actual_f_sigma = 1
-    # resolution of the image will be n_pixels_per_radius*2-by-n_pixels_per_radius*2
-    n_pixels_per_radius = 28
-    # max possible value of stress
-    Cutoff = 10 
-    #noise coefficient
-    coef_random = 0.1
-    
-    img = photo_elastic_response_on_particle(p, F, actual_f_sigma, n_pixels_per_radius, Cutoff)
-    mu = np.max(img)
-    sigma = np.std(img)
-    for ix,iy in np.ndindex(img.shape):
-        if (img[ix,iy] != 0): 
-            img[ix,iy] += coef_random*np.random.normal(mu, sigma)
-    return img
 
 if __name__ == '__main__':
     #max/min magnitude for force
