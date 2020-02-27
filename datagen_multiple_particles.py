@@ -11,6 +11,8 @@ We use two types of coordinates:
 """
 
 import numpy as np
+import pandas as pd
+import os
 from math import sin, cos, asin, acos, pi, sqrt
 from multiprocessing import Pool, cpu_count
 
@@ -144,26 +146,26 @@ def photo_elastic_response_at_xy(x, y, particle, forces, f_sigma, cutoff=np.inf)
     return photo_elastic_response_from_stress(sigma_xx, sigma_xy, sigma_yy, f_sigma)
 
 
-def photo_elastic_response_on_particle(canvas, x_min, y_max, avg_radius, particle, forces, f_sigma, pixels_per_radius, cutoff=np.inf):
+def photo_elastic_response_on_particle(canvas, x_min, y_max, max_radius, particle, forces, f_sigma, pixels_per_radius, cutoff=np.inf):
     '''Function computes photoelastic reponse at each point'''
     pixel_to_coordinate = np.linspace(-particle.radius, particle.radius, 2 * pixels_per_radius)
     radius_sqr = np.square(particle.radius)
-    
+    xy = []
     for i in np.arange(2 * pixels_per_radius):
         for j in np.arange(2 * pixels_per_radius):
             if np.square(pixel_to_coordinate[i]) + np.square(pixel_to_coordinate[j]) < radius_sqr:
-                x = np.ceil(particle.x + pixel_to_coordinate[i] - x_min)
-                y = np.ceil(particle.y + pixel_to_coordinate[j] - y_min)
-                
+                x = int(np.ceil((particle.x + pixel_to_coordinate[i] - x_min)*pixels_per_radius/max_radius))
+                y = int(np.ceil((y_max - particle.y - pixel_to_coordinate[j])*pixels_per_radius/max_radius))
                 canvas[x, y] = photo_elastic_response_at_xy(pixel_to_coordinate[i], pixel_to_coordinate[j], particle, forces, f_sigma, cutoff)
+    print(xy)
     return canvas
 
 def create_canvas(df_xy, pixels_per_radius):
     max_radius = df_xy['r'].max()
-    x_min, x_max,  = df_xy['x'].min()-max_radius, df_xy['x'].max()+max_radius,
-    y_min, y_max = df_xy['y'].min()-max_radius, df_xy['y'].max()+max_radius
-    canvas = np.zeros(int(np.ceil((x_max-x_min)*pixels_per_radius/max_radius)), 
-                      int(np.ceil((y_max-y_min)*pixels_per_radius/max_radius)))
+    x_min, x_max,  = df_xy['x'].min()-1.5*max_radius, df_xy['x'].max()+1.5*max_radius,
+    y_min, y_max = df_xy['y'].min()-1.5*max_radius, df_xy['y'].max()+1.5*max_radius
+    canvas = np.zeros((int(np.ceil((x_max-x_min)*pixels_per_radius/max_radius)), 
+                      int(np.ceil((y_max-y_min)*pixels_per_radius/max_radius))))
     return canvas, x_min, y_max, max_radius
     
 def angle_finder(cos_val, sin_val):
@@ -180,69 +182,40 @@ def angle_finder(cos_val, sin_val):
     return true_angle
 
 if __name__ == '__main__':
-    #max/min magnitude for force
-    lower_bound = 0.2
-    upper_bound = 0.4
-    #number of randomly noised pictures for each force selection
-    num_random = 1
-    #max/min number of forces
-    max_num_forces = 6
-    min_num_forces = 2
-    #number of different magnitudes for forces
-    num_mags = 3
-    #number of different angles 
-    num_angles_inner = 1
-    num_angles_tang = 1
-    #num pixles in image *2
+    
     n_pixels_per_radius = 28
-    #num forces
-    num_forces = 2
+    actual_f_sigma = 1
+    Cutoff = 10 
+    height = 1
+    
+    path_to_table = os.path.join(os.getcwd(), 'table.csv')
+    df_xy = pd.read_csv(path_to_table, header = None, names = ['num', 'x', 'y', 'r'])
+    print(df_xy)
+    canvas, x_min, y_max, max_radius = create_canvas(df_xy, n_pixels_per_radius)
+    print(canvas.shape)
+    for i in df_xy['num']:
+        particle = Particle(df_xy[df_xy['num'] == i]['x'].values[0],
+                            df_xy[df_xy['num'] == i]['y'].values[0],
+                            df_xy[df_xy['num'] == i]['r'].values[0],
+                            height)
+        F = 0.2 #[0.01, 0.4]
+        f1 = Force(F,  2, 0)
+        f2 = Force(F, 2+np.pi, 0)
+        all_forces = [f1, f2]
+        canvas  = photo_elastic_response_on_particle(canvas, x_min, y_max, max_radius, 
+                                                     particle, all_forces, actual_f_sigma, n_pixels_per_radius)
+        
+    
+    fig = plt.figure(figsize=(10, 10))
+    im = plt.imshow(np.asarray(canvas), vmin=-0, vmax=1, cmap='gray')
+    plt.show()
+    plt.close()
+        
     
     #multiprocessing with 4 processes
-    num_processes = cpu_count()
-    pool = Pool(processes = num_processes)
+    #num_processes = cpu_count()
+    #pool = Pool(processes = num_processes)
     
-    list_of_F = list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, num_random, lower_bound, upper_bound)
-    labels_num_forces = np.zeros(len(list_of_F)) + num_forces
-    labels_angles_inner = np.array([[f.get_phi() for f in F] for F in list_of_F])
-    labels_angles_tang = np.array([[f.get_alpha() for f in F] for F in list_of_F])
-    labels_mags = np.array([[f.get_mag() for f in F] for F in list_of_F])
-    data = np.array(pool.map(image_gen, list_of_F))
     
-
-    fig = plt.figure(figsize = (25, 25))
-    for i in range(3):
-        fig.add_subplot(1, 3, i+1)
-        plt.imshow(np.asarray(data[i,:,:]), vmin= 0, vmax = 1, cmap='gray')
-        
-# =============================================================================
-#np.save('la2', labels_angles)
-#np.save('lm2', labels_mags)
-#np.save('lnf2', labels_num_forces)
-#np.save('data2', data)
-# =============================================================================
-    
-# =============================================================================
-#     #create matrix that will store images
-#     data = np.empty((0, n_pixels_per_radius*2, n_pixels_per_radius*2))
-#     #create storage matrices for labels
-#     labels_angles = dict()
-#     labels_mags = dict()
-#     labels_num_forces = np.array([])
-#     
-#     #generate data
-#     for num_forces in range(min_num_forces, max_num_forces+1):
-#         start_time = time.time()
-#         list_of_F = list_of_force_angle_lists(num_forces, num_mags, num_angles, num_random, lower_bound, upper_bound)
-#         labels_num_forces = np.concatenate((labels_num_forces,
-#                                             np.zeros(len(list_of_F)) + num_forces))
-#         labels_angles[num_forces] = [[f.get_phi() for f in F] for F in list_of_F]
-#         labels_mags[num_forces] = [[f.get_mag() for f in F] for F in list_of_F]
-#         d = np.array(pool.map(image_gen, list_of_F))
-#         data = np.concatenate((data, d), axis = 0)
-#         print("--- %s seconds ---" % (time.time() - start_time))
-# 
-# =============================================================================  
-        
         
     
