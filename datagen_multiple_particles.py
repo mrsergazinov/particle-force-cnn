@@ -167,6 +167,20 @@ def create_canvas(df_xy, pixels_per_radius):
     canvas = np.zeros((int(np.ceil((x_max-x_min)*pixels_per_radius/max_radius)), 
                       int(np.ceil((y_max-y_min)*pixels_per_radius/max_radius))))
     return canvas, x_min, y_max, max_radius
+
+def particle_forces(particle_index, df_contact, df_xy, tang_force):
+    contact_particles_ind = set()
+    for i in df_contact['num1']:
+        if df_contact['num1' == i]['num2'].values[0] = particle_index:
+            contact_particles_ind.add(i)
+    for i in df_contact['num2']:
+        if df_contact['num2' == i]['num1'].values[0] = particle_index:
+            contact_particles_ind.add(i)
+    all_forces = []
+    init_x, init_y = 
+    for i in contact_particles_ind:
+        
+    
     
 def angle_finder(cos_val, sin_val):
     '''This function gives the value of the angle in radians from 
