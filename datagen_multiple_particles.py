@@ -150,14 +150,12 @@ def photo_elastic_response_on_particle(canvas, x_min, y_max, max_radius, particl
     '''Function computes photoelastic reponse at each point'''
     pixel_to_coordinate = np.linspace(-particle.radius, particle.radius, 2 * pixels_per_radius)
     radius_sqr = np.square(particle.radius)
-    xy = []
     for i in np.arange(2 * pixels_per_radius):
         for j in np.arange(2 * pixels_per_radius):
             if np.square(pixel_to_coordinate[i]) + np.square(pixel_to_coordinate[j]) < radius_sqr:
                 x = int(np.ceil((particle.x + pixel_to_coordinate[i] - x_min)*pixels_per_radius/max_radius))
                 y = int(np.ceil((y_max - particle.y - pixel_to_coordinate[j])*pixels_per_radius/max_radius))
                 canvas[x, y] = photo_elastic_response_at_xy(pixel_to_coordinate[i], pixel_to_coordinate[j], particle, forces, f_sigma, cutoff)
-    print(xy)
     return canvas
 
 def create_canvas(df_xy, pixels_per_radius):
@@ -168,19 +166,33 @@ def create_canvas(df_xy, pixels_per_radius):
                       int(np.ceil((y_max-y_min)*pixels_per_radius/max_radius))))
     return canvas, x_min, y_max, max_radius
 
-def particle_forces(particle_index, df_contact, df_xy, tang_force):
+def particle_forces(particle_index, df_contact, df_xy, alpha):
     contact_particles_ind = set()
+    dict_force_mag = dict()
+    list_of_forces = []
     for i in df_contact['num1']:
-        if df_contact['num1' == i]['num2'].values[0] = particle_index:
+        if not (df_contact[(df_contact['num1'] == i) & (df_contact['num2'] == particle_index)].empty):
             contact_particles_ind.add(i)
+            dict_force_mag[i] = df_contact[(df_contact['num1'] == i) & (df_contact['num2'] == particle_index)]['mag'].values[0]
     for i in df_contact['num2']:
-        if df_contact['num2' == i]['num1'].values[0] = particle_index:
+        if not (df_contact[(df_contact['num1'] == particle_index) & (df_contact['num2'] == i)].empty):
             contact_particles_ind.add(i)
-    all_forces = []
-    init_x, init_y = 
+            dict_force_mag[i] = df_contact[(df_contact['num2'] == i) & (df_contact['num1'] == particle_index)]['mag'].values[0]
+    all_forces = [] 
+    init_x = df_xy[df_xy['num'] == particle_index]['x'].values[0]
+    init_y = df_xy[df_xy['num'] == particle_index]['y'].values[0]
     for i in contact_particles_ind:
+        x = df_xy[df_xy['num'] == i]['x'].values[0]
+        y = df_xy[df_xy['num'] == i]['y'].values[0]
+        vec_mag = sqrt((init_x-x)**2 + (init_y - y)**2)
+        f_mag = dict_force_mag[i]
+        cos_val = (x - init_x)/vec_mag
+        sin_val = (y - init_y)/vec_mag
+        phi = angle_finder(cos_val, sin_val)
+        force = Force(f_mag, phi, alpha)
+        all_forces += [force]
+    return all_forces
         
-    
     
 def angle_finder(cos_val, sin_val):
     '''This function gives the value of the angle in radians from 
@@ -201,30 +213,32 @@ if __name__ == '__main__':
     actual_f_sigma = 1
     Cutoff = 10 
     height = 1
+    alpha = 0
     
-    path_to_table = os.path.join(os.getcwd(), 'table.csv')
-    df_xy = pd.read_csv(path_to_table, header = None, names = ['num', 'x', 'y', 'r'])
-    print(df_xy)
+    path_contact = os.path.join(os.getcwd(), 'contact_force_info_111.csv')
+    path_xy  = os.path.join(os.getcwd(), 'particles_info_111.csv')
+    df_xy = pd.read_csv(path_xy, header = None, names = ['num', 'x', 'y', 'r'])
+    df_contact = pd.read_csv(path_contact, header = None, names = ['num1', 'num2', 'mag'])
     canvas, x_min, y_max, max_radius = create_canvas(df_xy, n_pixels_per_radius)
-    print(canvas.shape)
     for i in df_xy['num']:
+        print(i)
         particle = Particle(df_xy[df_xy['num'] == i]['x'].values[0],
                             df_xy[df_xy['num'] == i]['y'].values[0],
                             df_xy[df_xy['num'] == i]['r'].values[0],
                             height)
-        F = 0.2 #[0.01, 0.4]
-        f1 = Force(F,  2, 0)
-        f2 = Force(F, 2+np.pi, 0)
-        all_forces = [f1, f2]
+        all_forces = particle_forces(i, df_contact, df_xy, alpha)
         canvas  = photo_elastic_response_on_particle(canvas, x_min, y_max, max_radius, 
                                                      particle, all_forces, actual_f_sigma, n_pixels_per_radius)
         
     
-    fig = plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(100, 100))
     im = plt.imshow(np.asarray(canvas), vmin=-0, vmax=1, cmap='gray')
     plt.show()
     plt.close()
         
+    
+    
+    
     
     #multiprocessing with 4 processes
     #num_processes = cpu_count()
