@@ -187,7 +187,7 @@ def angle_finder(cos_val, sin_val):
         true_angle = asin(sin_val) + 2*pi
     return true_angle
 
-def calculate_last_force(F, alpha_init, alpha_std_dev):
+def calculate_last_force(F):
     '''Given list of forces, the function outputs the last force, based on balance equations: 
         for tangential and inner components'''
 
@@ -268,6 +268,7 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
     
     #alpha_init and alpha_std_dev are parameters for the random normal distribution to produce
     #tangential angles
+
     alpha_init = 0
     alpha_std_dev = pi/12
     #the std. dev was chosen so that alpha mostly stays within -pi/4 to pi/4, which is
@@ -288,7 +289,7 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                                             phi_init+(i+1)*shift-delta) % (2*pi)
                     f_alpha = np.random.normal(alpha_init, alpha_std_dev)
                     F_list.append(Force(f_mag, f_phi, f_alpha))
-                f_last = calculate_last_force(F_list, alpha_init, alpha_std_dev)
+                f_last = calculate_last_force(F_list)
                 F_list.append(f_last)
                 check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f
                          in F_list[:-1]] + [(f.get_alpha()<=pi/4 and f.get_alpha()>=-pi/4) for f in F_list]
