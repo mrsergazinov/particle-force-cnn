@@ -291,8 +291,10 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                     F_list.append(Force(f_mag, f_phi, f_alpha))
                 f_last = calculate_last_force(F_list)
                 F_list.append(f_last)
-                check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f
-                         in F_list[:-1]] + [(f.get_alpha()<=pi/4 and f.get_alpha()>=-pi/4) for f in F_list]
+                
+                check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f in F_list[:-1]]
+                check += [(f.get_alpha()<=pi/4 and f.get_alpha()>=-pi/4) for f in F_list]
+                check += [(f.get_mag() >= 0) for f in F_list]
                 attempt_count+=1
                 
                 if all(check):    
