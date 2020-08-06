@@ -248,8 +248,8 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
             and each has the tangential component within -pi/4 to pi/4.This is necessary as
             the last force may have changed this. 
             iv. If the conditions are satisfied then we have a ready-to-go force list. We
-            repetitively add this force list to the final list of force lists as follows:
-                a. At each step, we shift all of the position angles by pi/(2*num_angles_inner).
+            repetitively (num_angles_inner times) add this force list to the final list of force lists as follows:
+                a. At each step, we shift all of the position angles by 2*pi/num_angles_inner.
                 b. We attach num_random copies of the current force list to the final list of 
                 force lists.
     '''
@@ -263,7 +263,7 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
     #[0, 2*pi]
     delta = pi/6
     shift = 2 * pi / num_forces
-    epsilon = pi/(2*num_angles_inner)
+    epsilon = 2*pi/num_angles_inner
     phi_init = 0  
     
     #alpha_init and alpha_std_dev are parameters for the random normal distribution to produce
