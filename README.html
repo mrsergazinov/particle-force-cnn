@@ -393,6 +393,18 @@ The most straightforward way for converting images is through a Python package <
 <li>Open and run the <code>test.py</code> file.</li>
 </ol>
 </div>
+<div id="file-description" class="section level3">
+<h3>File description</h3>
+<ol style="list-style-type: decimal">
+<li><code>class.py</code> defines classes for representing particles and forces;</li>
+<li><code>force_list.py</code> generates the synthetic force list for data generation;</li>
+<li><code>photoelastic_response.py</code> defines functions for calculating the intensity field based on the provided forces;</li>
+<li><code>image_generator.py</code> generates images based on the intensity field;</li>
+<li><code>datagen_template.py</code> is the image generator combining <code>1-4</code> above into a pipeline;</li>
+<li><code>test_functions.py</code> defines set of functions for loading and handling the supplied data, and running the models on it;</li>
+<li><code>test.py</code> is the script that operates functions defined in <code>6</code> to run the models on the supplied data.</li>
+</ol>
+</div>
 </div>
 
 
