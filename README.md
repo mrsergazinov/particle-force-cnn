@@ -13,20 +13,22 @@ Photoelastic techniques have a long tradition in both qualitative and quantitati
 Running the model on the provided test data:
 
 1. Install `Anaconda` from [here](https://docs.anaconda.com/anaconda/install/).
-2. Install `Tensorflow` on top of `Anaconda` from [here](https://docs.anaconda.com/anaconda/user-guide/tasks/tensorflow/).
-3. Make sure you have the folllowing packages installed: `numpy`, `pandas`, `matplotlib`, `scikit-learn`.
+2. Install `Tensorflow` on top of `Anaconda` using `conda install tensorflow` command in the terminal. Consult the guide [here](https://docs.anaconda.com/anaconda/user-guide/tasks/tensorflow/).
+3. Make sure you have the folllowing packages installed: `numpy`, `pandas`, `matplotlib`, `scikit-learn`, and `scipy`.
 4. For convenience, please, install `Spyder` IDE for Python in `Anaconda`.
 5. Clone our repository to your local machine. Make sure that you are also downloading the trained models folder. For this you may need to install `git lfs` extension from [here](https://git-lfs.github.com/).
-6. Open and run the `test.py` file. 
-7. The output should be ![image](img_true_vs_pred_particles.png)
+6. Open and run the `test.py` file. This step produces predictions, which would stored in the `image_data` folder.
+7. Open and run the `view_test.py`. The output should be ![image](img_true_vs_pred_particles.png)
 
 Running the model on other data:
 
 1. Apply steps `1-4` above.
 2. Convert your image data into `numpy` array such that the data matrix has dimesions `n * h * w * ch`, where `n` is the number of images, `h, w` are height and width of the images, and `ch` is the number of channels. Our models only works on the greyscale data, hence, the paraemter `ch` will be assumed to be equal to `1` and can be omitted in the matrix.  
-The most straightforward way for converting images is through a Python package `Pillow`, the guidelines for which can be found [here](https://pillow.readthedocs.io/en/stable/index.html).
+The most straightforward way for converting images to a matrix is through a Python package `Pillow`, the guidelines for which can be found [here](https://pillow.readthedocs.io/en/stable/index.html).  
+Additionally, the images should have resolution `56 x 56` with pixel values in the range `[0, 1]`. To achieve this, the images need to be preprocessed. One way to do the pre-processing is manually through `numpy` and `scipy` packages in Python: the `scipy.misc.imresize` could be used for the resizing. Using `numpy`, the image data could be standartized by subtracting the `min` of all the pixels and dividing by the `max` of all the pixels.
 3. Save the data in the `.npy` file format and store it in the `image_data` folder. Rename your data to `data.npy`.
-4. Open and run the `test.py` file. 
+4. Open and run the `test.py` file. The predicted data should be now saved into the `image_data` folder. The additional index file defines the mapping between the predictions and the true images, because the predictions may be shuffled by the models. 
+5. You can view the predicted and the true images using the `view_test.py`.
 
 
 ### File description
