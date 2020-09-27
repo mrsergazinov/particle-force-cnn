@@ -16,9 +16,9 @@ Running the model on the provided test data:
 2. Install `Tensorflow` on top of `Anaconda` from [here](https://docs.anaconda.com/anaconda/user-guide/tasks/tensorflow/).
 3. Make sure you have the folllowing packages installed: `numpy`, `pandas`, `matplotlib`, `scikit-learn`.
 4. For convenience, please, install `Spyder` IDE for Python in `Anaconda`.
-4. Clone our repository to your local machine.
-5. Open and run the `test.py` file. 
-6. The output should be ![image](img_true_vs_pred_particles.png)
+5. Clone our repository to your local machine. Make sure that you are also downloading the trained models folder. For this you may need to install `git lfs` extension from [here](https://git-lfs.github.com/).
+6. Open and run the `test.py` file. 
+7. The output should be ![image](img_true_vs_pred_particles.png)
 
 Running the model on other data:
 
