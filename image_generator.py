@@ -20,8 +20,8 @@ def image_gen(F):
     img = photo_elastic_response_on_particle(p, F, actual_f_sigma, n_pixels_per_radius, Cutoff)
     mu = np.max(img)
     sigma = np.std(img)
-    for ix,iy in np.ndindex(img.shape):
-        if (img[ix,iy] != 0): 
-            img[ix,iy] += coef_random*np.random.normal(mu, sigma)
+    # for ix,iy in np.ndindex(img.shape):
+    #     if (img[ix,iy] != 0): 
+    #         img[ix,iy] += coef_random*np.random.normal(mu, sigma)
     return img
 

@@ -17,7 +17,6 @@ if __name__ == '__main__':
     
     num_processes = cpu_count()
     pool = Pool(processes = num_processes)
-    gen = Image_Gen()
     
     models_path = os.path.join(os.getcwd(), 'saved_models')
     image_path = os.path.join(os.getcwd(), "image_data", "data.npy")
@@ -31,17 +30,19 @@ if __name__ == '__main__':
                                                   models_at, models_m)
     min_num_forces, max_num_forces = min(num_forces), max(num_forces)
     F = generate_F_lists(predict_ai, predict_at, predict_m, max_num_forces)
-    predict_images = np.array(pool.map(gen.image_gen, F))
     
+    predict_images = np.array(pool.map(image_gen, F))
     X = X.squeeze(axis = 3)
-    fig2 = plt.figure(figsize = (40, 20))
-    for i in range(2*num_images):
-        fig2.add_subplot(2, num_images, i+1)
-        plt.axis('off')
-        if i < num_images:
-            plt.imshow(np.asarray(X[index[i],:,:]), vmin= 0, vmax = 1, cmap='gray')
-        else:
-            plt.imshow(np.asarray(predict_images[i-num_images,:,:]), vmin= 0, vmax = 1, cmap='gray')
+    np.save(os.path.join(os.getcwd(), "image_data", "predicted.npy"), predict_images)
+    np.save(os.path.join(os.getcwd(), "image_data", "index_img.npy"), index)
+    # fig2 = plt.figure(figsize = (40, 20))
+    # for i in range(2*num_images):
+    #     fig2.add_subplot(2, num_images, i+1)
+    #     plt.axis('off')
+    #     if i < num_images:
+    #         plt.imshow(np.asarray(X[index[i],:,:]), vmin= 0, vmax = 1, cmap='gray')
+    #     else:
+    #         plt.imshow(np.asarray(predict_images[i-num_images,:,:]), vmin= 0, vmax = 1, cmap='gray')
         
 
 
