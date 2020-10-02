@@ -40,6 +40,7 @@ Additionally, the images should have resolution `56 x 56` with pixel values in t
 5. `datagen_template.py` is the image generator combining `1-4` above into a pipeline;
 6. `test_functions.py` defines set of functions for loading and handling the supplied data, and running the models on it;
 7. `test.py` is the script that operates functions defined in `6` to run the models on the supplied data.
+8. `view_test.py` is the script letting the user view the results of predictions; as such it lets the user compare the supplied images with the images generated based on the forces predicted by the models. 
 
 
 
