@@ -97,7 +97,7 @@ def photo_elastic_response_at_xy(x, y, particle, forces, f_sigma, cutoff=np.inf)
     return photo_elastic_response_from_stress(sigma_xx, sigma_xy, sigma_yy, f_sigma)
 
 
-def photo_elastic_response_on_particle(particle, forces, f_sigma, pixels_per_radius, cutoff=np.inf):
+def photo_elastic_response_on_particle(particle, f_sigma, pixels_per_radius, cutoff , forces):
     '''Function computes photoelastic reponse at each point'''
     photo_elastic_response = np.zeros((2 * pixels_per_radius, 2 * pixels_per_radius))
     pixel_to_coordinate = np.linspace(-particle.radius, particle.radius, 2 * pixels_per_radius)

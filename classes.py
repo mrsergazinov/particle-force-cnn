@@ -5,7 +5,7 @@ This file defines Particle and Force classes needed for data handling and manipu
 import numpy as np
 
 class Particle:
-    def __init__(self, radius=1, height=1):
+    def __init__(self, radius=1, height=0.1):
         self.radius = radius
         self.height = height
 

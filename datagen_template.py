@@ -3,9 +3,11 @@ Main function call.
 """
 
 import numpy as np
+from functools import partial
 from multiprocessing import Pool, cpu_count
 import matplotlib.pyplot as plt
-from image_generator import *
+
+from photoelastic_response import *
 from force_list import *
 
 if __name__ == '__main__':
@@ -14,42 +16,40 @@ if __name__ == '__main__':
     upper_bound = 0.4
     #number of randomly noised pictures for each force selection
     num_random = 1
-    #max/min number of forces
-    max_num_forces = 6
-    min_num_forces = 2
     #number of different magnitudes for forces
     num_mags = 3
     #number of different angles 
     num_angles_inner = 2
     num_angles_tang = 2
-    #num pixles in image *2
-    n_pixels_per_radius = 28
     #num forces
     num_forces = 6
-    
+   
     #multiprocessing
     num_processes = cpu_count()
     pool = Pool(processes = num_processes)
-    gen = Image_Gen()
     
+    #image generator with preset parameters
+    image_gen_preset = partial(photo_elastic_response_on_particle, Particle(1, 0.1), 1, 28, 10)
+    
+    #generate force lists
     list_of_F = list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, num_random, lower_bound, upper_bound)
+    #save force descriptions for each particle
     labels_num_forces = np.zeros(len(list_of_F)) + num_forces
     labels_angles_inner = np.array([[f.get_phi() for f in F] for F in list_of_F])
     labels_angles_tang = np.array([[f.get_alpha() for f in F] for F in list_of_F])
     labels_mags = np.array([[f.get_mag() for f in F] for F in list_of_F])
-    data_noise = np.array(pool.map(gen.image_gen_with_noise, list_of_F))
-    data = np.array(pool.map(gen.image_gen, list_of_F))
+    #generate images of particles based on the force lists
+    data = np.array(pool.map(image_gen_preset, list_of_F))
     
-
+    #plot images
     fig = plt.figure(figsize = (25, 25))
-    for i in range(24):
+    for i in range(12):
         fig.add_subplot(8, 3, i+1)
-        if i < 12:
-            plt.imshow(np.asarray(data[i,:,:]), vmin= 0, vmax = 1, cmap='gray')
-        else:
-            plt.imshow(np.asarray(data_noise[i-12,:,:]), vmin= 0, vmax = 1, cmap='gray')
-    np.save('data6_noise', data_noise)
-    np.save('data6', data)
+        plt.imshow(np.asarray(data[i,:,:]), vmin= 0, vmax = 1, cmap='gray')
+
+#     # np.save('data6_noise', data_noise)
+#     # np.save('data6', data)
+# =============================================================================
 # =============================================================================
 #np.save('la2', labels_angles)
 #np.save('lm2', labels_mags)

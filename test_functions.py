@@ -15,6 +15,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+
 from datagen_template import *
 from classes import *
 
@@ -87,8 +88,7 @@ def predict(X, model_class, models_ai, models_at, models_m):
     return (lai_pred, lm_pred, lat_pred, num_forces, index)
 
 def generate_F_lists(predict_ai, predict_at, predict_m, max_num_forces): 
-    ''' The function generates particle image matrices based on the list position angles,
-    tangent angles, and magnitudes. It outputs the matrices as Numpy matrix.'''
+    ''' The function outputs the description of the predicted list of forces for each particle. '''
 
     list_of_F_pred = []
     for l in range(predict_ai.shape[0]):
