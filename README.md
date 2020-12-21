@@ -37,9 +37,9 @@ Additionally, the images should have resolution `56 x 56` with pixel values in t
 2. `force_list.py` generates the synthetic force list for data generation;
 3. `photoelastic_response.py` defines functions for calculating the intensity field based on the provided forces;
 4. `datagen_template.py` is the image generator combining `1-3` above into a pipeline;
-5. `test_functions.py` defines set of functions for loading and handling the supplied data, and running the models on it;
-6. `test.py` is the script that operates functions defined in `6` to run the models on the supplied data.
-7. `view_test.py` is the script letting the user view the results of predictions; as such it lets the user compare the supplied images with the images generated based on the forces predicted by the models. 
+5. `predictions_test_functions.py` defines set of functions for loading and handling the supplied data, and running the models on it;
+6. `predictions_test.py` is the script that operates functions defined in `6` to run the models on the supplied data.
+7. `predictions_view_test.py` is the script letting the user view the results of predictions; as such it lets the user compare the supplied images with the images generated based on the forces predicted by the models. 
 
 
 

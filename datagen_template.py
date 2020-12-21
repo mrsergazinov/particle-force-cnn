@@ -29,7 +29,11 @@ if __name__ == '__main__':
     pool = Pool(processes = num_processes)
     
     #image generator with preset parameters
-    image_gen_preset = partial(photo_elastic_response_on_particle, Particle(1, 0.1), 1, 28, 10)
+    particle = Particle(1, 0.1)
+    f_sigma = 1 
+    pixels_per_radius = 28
+    cutoff = 10
+    image_gen_preset = partial(photo_elastic_response_on_particle, particle, f_sigma, pixels_per_radius, cutoff)
     
     #generate force lists
     list_of_F = list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, num_random, lower_bound, upper_bound)
