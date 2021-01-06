@@ -78,6 +78,10 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                 a. At each step, we shift all of the position angles by 2*pi/num_angles_inner.
                 b. We attach num_random copies of the current force list to the final list of 
                 force lists.
+    
+    In total, at most (num_random * num_angles_inner * num_angles_tang * num_mags) force lists corresponding to 
+    (physically feasible) particles are generated. The number of force lists may be smaller if at some iteration of the loops,
+    we cannot generate physically feasible list for more than max_attempts = 10^6 attempts. 
     '''
     list_of_F_lists = []
     
@@ -104,20 +108,25 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
     #starting magnitude. This is done to speed up computations. 
     max_attempts = 10**6
     
+    # draw mean force
     for mag in np.linspace(f_lower_bound, f_upper_bound, num_mags):
         for i in range(num_angles_tang):
+            # count attempts made to generate new force list
             attempt_count = 0
             while attempt_count < max_attempts:
                 F_list = []
                 for i in range(num_forces-1):
+                    # generate (num_forces - 1) forces acting on particle
                     f_mag = abs(np.random.normal(mag, mag/5))
                     f_phi = np.random.uniform(phi_init+i*shift+delta, 
                                             phi_init+(i+1)*shift-delta) % (2*pi)
                     f_alpha = np.random.normal(alpha_init, alpha_std_dev)
                     F_list.append(Force(f_mag, f_phi, f_alpha))
+                # calculate last force to balance the rest
                 f_last = calculate_last_force(F_list)
                 F_list.append(f_last)
                 
+                # check that the generated forces are physically feasible
                 check = [abs(f_last.get_phi() - f.get_phi()) >= pi/3 for f in F_list[:-1]]
                 check += [(f.get_alpha()<=pi/4 and f.get_alpha()>=-pi/4) for f in F_list]
                 check += [(f.get_mag() >= 0) for f in F_list]
@@ -125,8 +134,10 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                 
                 if all(check):    
                     for ang_inner in range(num_angles_inner):
+                        # add num_angles_inner rotations
                         F_list_new = [Force(f.get_mag(), (f.get_phi()+ang_inner*epsilon)%(2*pi), f.get_alpha())
                                       for f in F_list]
+                        # add num_random copies of the particle
                         for rand in range(num_random):
                             list_of_F_lists.append(F_list_new)   
                     attempt_count = max_attempts

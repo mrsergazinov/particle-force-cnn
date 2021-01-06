@@ -22,7 +22,7 @@ if __name__ == '__main__':
     num_angles_inner = 2
     num_angles_tang = 2
     #num forces
-    num_forces = 6
+    num_forces = 3
    
     #multiprocessing
     num_processes = cpu_count()
@@ -51,15 +51,5 @@ if __name__ == '__main__':
         fig.add_subplot(8, 3, i+1)
         plt.imshow(np.asarray(data[i,:,:]), vmin= 0, vmax = 1, cmap='gray')
 
-#     # np.save('data6_noise', data_noise)
-#     # np.save('data6', data)
-# =============================================================================
-# =============================================================================
-#np.save('la2', labels_angles)
-#np.save('lm2', labels_mags)
-#np.save('lnf2', labels_num_forces)
-#np.save('data6_noise', data)
-#np.save('data6', data2) 
-# =============================================================================
         
     
