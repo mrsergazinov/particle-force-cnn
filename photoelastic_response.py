@@ -108,7 +108,7 @@ def photo_elastic_response_on_particle(particle, f_sigma, pixels_per_radius, cut
             if np.square(pixel_to_coordinate[i]) + np.square(pixel_to_coordinate[j]) < radius_sqr:
                 photo_elastic_response[i, j] = photo_elastic_response_at_xy(pixel_to_coordinate[i], pixel_to_coordinate[j], particle, forces, f_sigma, cutoff)
             else:
-                photo_elastic_response[i, j] = 0
+                photo_elastic_response[i, j] = 1
     return photo_elastic_response
 
 def test(particle, force, f_sigma, pixels_per_radius, cutoff=np.inf):

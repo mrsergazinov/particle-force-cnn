@@ -12,8 +12,8 @@ from force_list import *
 
 if __name__ == '__main__':
     #max/min magnitude for force
-    lower_bound = 0.2
-    upper_bound = 0.4
+    lower_bound = 0.0001
+    upper_bound = 0.02
     #number of randomly noised pictures for each force selection
     num_random = 1
     #number of different magnitudes for forces
@@ -29,10 +29,10 @@ if __name__ == '__main__':
     pool = Pool(processes = num_processes)
     
     #image generator with preset parameters
-    particle = Particle(1, 0.1)
-    f_sigma = 1 
-    pixels_per_radius = 28
-    cutoff = 10
+    particle = Particle(0.0154, 0.0031)
+    f_sigma = 100.24
+    pixels_per_radius = 40
+    cutoff = 10000
     image_gen_preset = partial(photo_elastic_response_on_particle, particle, f_sigma, pixels_per_radius, cutoff)
     
     #generate force lists
