@@ -1,4 +1,6 @@
 image_data
 models
-models/
+labels
 image_data/
+models/
+labels/
