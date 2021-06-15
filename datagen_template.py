@@ -21,8 +21,6 @@ if __name__ == '__main__':
     # number of different angles 
     num_angles_inner = 4
     num_angles_tang = 4
-    # number of randomly noised pictures for each force selection    
-    num_random = 1
     
     # max/min magnitude for force
     lower_bound = 0.01
@@ -52,15 +50,14 @@ if __name__ == '__main__':
         num_mags = int(sys.argv[2 + num_radius + 2])
         num_angles_inner = int(sys.argv[2 + num_radius + 3])
         num_angles_tang = int(sys.argv[2 + num_radius + 4])
-        num_random = int(sys.argv[2 + num_radius + 5])
-        subset = sys.argv[2 + num_radius + 6]
+        subset = sys.argv[2 + num_radius + 5]
 
     #multiprocessing
     num_processes = cpu_count()
     pool = Pool(processes = num_processes)
     
     #generate force lists
-    list_of_F = list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, num_random, lower_bound, upper_bound, delta_angle_inner)
+    list_of_F = list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, lower_bound, upper_bound, delta_angle_inner)
     #save force descriptions
     labels_angles_inner = np.array([[f.get_phi() for f in F] for F in list_of_F])
     labels_angles_tang = np.array([[f.get_alpha() for f in F] for F in list_of_F])

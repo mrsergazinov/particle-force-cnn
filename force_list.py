@@ -54,7 +54,7 @@ def calculate_conv_angle(angle):
     else:
         return angle
         
-def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, num_random, f_lower_bound, f_upper_bound, delta_angle_inner):
+def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, f_lower_bound, f_upper_bound, delta_angle_inner):
     '''
     This function generates force lists.
     
@@ -140,14 +140,10 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                 check += [(f.get_mag() >= 0) for f in F_list]
                 attempt_count+=1
                 
-                if all(check):    
+                if all(check):
                     for ang_inner in range(num_angles_inner):
                         # add num_angles_inner rotations
                         F_list_new = [Force(f.get_mag(), (f.get_phi()+ang_inner*epsilon)%(2*pi), f.get_alpha())
                                       for f in F_list]
-                        # add num_random copies of the particle
-                        for rand in range(num_random):
-                            list_of_F_lists.append(F_list_new)   
                     attempt_count = max_attempts
-    
     return list_of_F_lists
