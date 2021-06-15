@@ -14,10 +14,8 @@ import numpy as np
 from classes import *
 
 def force_impact_point_xy(particle, force):
-    """ 
-        Returns the xy coordinates of the point at which the force acts 
-        on the particle
-    """
+    '''Returns the xy coordinates of the point at which the force acts
+        on the particle. '''
     x = particle.radius * np.cos(force.phi) 
     y = particle.radius * np.sin(force.phi)
     return x, y
@@ -47,11 +45,9 @@ def xy_to_f_polar(x, y, particle, force):
     return f_polar_r, f_polar_theta
 
 def stress_tensor_rr_in_f_polar(f_polar_r, f_polar_theta, particle, force, cutoff=np.inf):
-    """
-        Returns the rr part of the stress tensor in f_polar coordinates
+    '''Returns the rr part of the stress tensor in f_polar coordinates
         All the other parts of the tensor are zero in this coordinates
-        To make it more realistic cutoff can be set to maximal possible value of the stress
-    """
+        To make it more realistic cutoff can be set to maximal possible value of the stress. '''
     c = force.magnitude / (np.pi * particle.height)
     force_stress = 2*np.cos(f_polar_theta) / f_polar_r
     boundary_balance_stress = -np.cos(force.alpha) / particle.radius
@@ -59,7 +55,7 @@ def stress_tensor_rr_in_f_polar(f_polar_r, f_polar_theta, particle, force, cutof
     return min(stress_tensor_rr, cutoff)
 
 def transform_stress_tensor_in_f_polar_to_xy(stress_tensor_rr, f_polar_theta, force):
-    '''Function computes force in xy-coordinates given polar coordinates'''
+    '''Function computes force in xy-coordinates given polar coordinates.'''
     sin_rotation = np.sin(f_polar_theta + force.phi + force.alpha)
     cos_rotation = np.cos(f_polar_theta + force.phi + force.alpha)
     stress_tensor_xx = stress_tensor_rr * np.square(cos_rotation)
@@ -68,13 +64,13 @@ def transform_stress_tensor_in_f_polar_to_xy(stress_tensor_rr, f_polar_theta, fo
     return np.array([stress_tensor_xx, stress_tensor_xy, stress_tensor_yy])
 
 def stress_tensor_in_xy_one_force(x, y, particle, force, cutoff=np.inf):
-    '''Function computes stress tensor given one force'''
+    '''Function computes stress tensor given one force.'''
     r, theta = xy_to_f_polar(x, y, particle, force)
     sigma_rr = stress_tensor_rr_in_f_polar(r, theta, particle, force, cutoff)
     return transform_stress_tensor_in_f_polar_to_xy(sigma_rr, theta, force)
 
 def stress_tensor_in_xy(x, y, particle, forces, cutoff=np.inf):
-    '''Function cpmutes stress tensors given forces'''
+    '''Function cpmutes stress tensors given forces.'''
     sigma_xx = 0
     sigma_xy = 0
     sigma_yy = 0
@@ -87,18 +83,18 @@ def stress_tensor_in_xy(x, y, particle, forces, cutoff=np.inf):
     return sigma_xx, sigma_xy, sigma_yy
 
 def photo_elastic_response_from_stress(stress_tensor_xx, stress_tensor_xy, stress_tensor_yy, f_sigma):
-    '''Function computes photoelastic reponse at apoint given stress tensors'''
+    '''Function computes photoelastic reponse at a point given stress tensors.'''
     principal_stress_diff = np.sqrt(np.square(stress_tensor_xx - stress_tensor_yy) + 4 * np.square(stress_tensor_xy))
     return np.square(np.sin(np.pi * principal_stress_diff / f_sigma))
 
 def photo_elastic_response_at_xy(x, y, particle, forces, f_sigma, cutoff=np.inf):
-    '''Function computes photoelastic reponse at apoint given forces'''
+    '''Function computes photoelastic reponse at a point given forces'''
     sigma_xx, sigma_xy, sigma_yy = stress_tensor_in_xy(x, y, particle, forces, cutoff)
     return photo_elastic_response_from_stress(sigma_xx, sigma_xy, sigma_yy, f_sigma)
 
 
 def photo_elastic_response_on_particle(particle, f_sigma, pixels_per_radius, cutoff, forces):
-    '''Function computes photoelastic reponse at each point'''
+    '''Function computes photoelastic reponse at each point in a given grid.'''
     photo_elastic_response = np.zeros((2 * pixels_per_radius, 2 * pixels_per_radius))
     pixel_to_coordinate = np.linspace(-particle.radius, particle.radius, 2 * pixels_per_radius)
     radius_sqr = np.square(particle.radius)

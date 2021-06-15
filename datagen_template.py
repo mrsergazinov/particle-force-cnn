@@ -14,31 +14,18 @@ from force_list import *
 
 if __name__ == '__main__':
     # set particle parameters
-    #num forces
-    num_forces = 2     
-    # number of different magnitudes for forces
-    num_mags = 4
-    # number of different angles 
-    num_angles_inner = 4
+    num_forces = 2  #num forces
+    num_mags = 4 # number of different magnitudes for forces
+    num_angles_inner = 4 # number of different angles
     num_angles_tang = 4
-    
-    # max/min magnitude for force
-    lower_bound = 0.01
+    lower_bound = 0.01 # max/min magnitude for force
     upper_bound = 0.9
-    
-    # delta angle between contact forces
-    delta_angle_inner = np.pi / 6
-
-    #radius/height pf particle
-    radius = [0.0055]
+    delta_angle_inner = np.pi / 6  # delta angle between contact forces
+    radius = [0.0055] # radius/height pf particle
     height = 0.005
-    
-    # material constant
-    f_sigma = 11000
-    # pixels per radius
-    px2m = 0.00019
-    # brightness cutoff
-    cutoff = np.infty
+    f_sigma = 11000 # material constant
+    px2m = 0.00019 # pixels per radius
+    cutoff = np.infty # brightness cutoff
     
     # check input is supplied from command line
     if (sys.argv[1] == 'user_input'):
@@ -58,6 +45,7 @@ if __name__ == '__main__':
     
     #generate force lists
     list_of_F = list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, lower_bound, upper_bound, delta_angle_inner)
+    
     #save force descriptions
     labels_angles_inner = np.array([[f.get_phi() for f in F] for F in list_of_F])
     labels_angles_tang = np.array([[f.get_alpha() for f in F] for F in list_of_F])
@@ -69,6 +57,7 @@ if __name__ == '__main__':
     np.save(os.path.join(os.getcwd(), 'labels', subset, str(num_forces), 'mags.npy'),
             labels_mags)
     
+    # generate images
     for r in radius:
         #image generator with preset parameters
         particle = Particle(r, height)

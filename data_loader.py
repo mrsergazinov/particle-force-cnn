@@ -10,9 +10,8 @@ class GaussBlur:
     def blur(self, image):
         return gaussian_filter(image, sigma = self.radius)
 
-# Define class for data generation
 class DataGenerator:
-    '''Generates data for Keras'''
+    ''' Generates augemented data for Keras using the preprocessing function'''
     def __init__(self, list_image_paths = None,  
                  dim = None,
                  n_channels = 3, 
@@ -46,10 +45,8 @@ class DataGenerator:
 
         return X
 
-
-# Define sorter of image names in order by image number (default is alphanumeric)
 def sorter(item):
-    ''' Since highest marks first, least error = most marks '''
+    ''' Define sorter of image names in order by image number (default is alphanumeric) '''
     radius = float(item[1 : item.find('_')])
     num_img = int(item[item.find('g') + 1 : item.find('j') - 1])
     return (radius, num_img)
