@@ -80,7 +80,7 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
             the last force may have changed this. 
             iv. If the conditions are satisfied then we have a ready-to-go force list. We
             repetitively (num_angles_inner times) add this force list to the final list of force lists as follows:
-                a. At each step, we shift all of the position angles by 2*pi / (num_forces * num_angles_inner).
+                a. At each step, we shift all of the position angles by random angle (picked uniformly from [0, 2 pi]).
                 b. We attach the resulting force list to the final list of force lists.
     
     In total, at most (num_angles_inner * num_angles_tang * num_mags) force lists corresponding to
@@ -89,7 +89,6 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
     '''
     # Initialize variables
     list_of_F_lists = []
-    epsilon = 2 * pi / (num_forces * num_angles_inner) # epsilon is defined to shift the position angles while attaching the force list
     phi_init = 0 # phi_init is defined to help produce the sub-intervals for position angles from the interval
     delta = delta_angle_inner / 2 # delta serves to ensure that the sub-inrervals for position angles are pi/6 apart
     alpha_init = 0 # alpha_init and alpha_std_dev are parameters for the random normal distribution to produce tangential angles
@@ -126,7 +125,7 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                 if all(check):
                     for ang_inner in range(num_angles_inner):
                         # add num_angles_inner rotations
-                        F_list_new = [Force(f.get_mag(), (f.get_phi() + ang_inner * epsilon) % (2 * pi), f.get_alpha())
+                        F_list_new = [Force(f.get_mag(), (f.get_phi() + np.random.uniform(0, 2 * pi)) % (2 * pi), f.get_alpha())
                                       for f in F_list]
                         list_of_F_lists.append(F_list_new)
                     attempt_count = max_attempts
