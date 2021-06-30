@@ -54,7 +54,7 @@ def calculate_conv_angle(angle):
     else:
         return angle
         
-def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, num_random, f_lower_bound, f_upper_bound, delta_angle_inner):
+def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_inner, f_lower_bound, f_upper_bound, delta_angle_inner):
     '''
     This function generates force lists.
     
@@ -62,8 +62,7 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
     force lists.
     
     The process works as follows:
-        1. The magnitude value gets sequentially drawn from an equally-spaced sequence 
-        from f_lower_bound to f_upper_bound that consists of num_mags elements
+        1. The magnitude value are sampled from the truncated exponential distribution (truncated to lower and upper bounds)
         2. Then the following process is repeated num_angles_tang times:
             i. (num_forces - 1) forces are generated sequentially:
                 a. The magnitude comes from a random normal distribution with mean = mag
@@ -82,36 +81,20 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
             iv. If the conditions are satisfied then we have a ready-to-go force list. We
             repetitively (num_angles_inner times) add this force list to the final list of force lists as follows:
                 a. At each step, we shift all of the position angles by 2*pi / (num_forces * num_angles_inner).
-                b. We attach num_random copies of the current force list to the final list of 
-                force lists.
+                b. We attach the resulting force list to the final list of force lists.
     
-    In total, at most (num_random * num_angles_inner * num_angles_tang * num_mags) force lists corresponding to 
+    In total, at most (num_angles_inner * num_angles_tang * num_mags) force lists corresponding to
     (physically feasible) particles are generated. The number of force lists may be smaller if at some iteration of the loops,
     we cannot generate physically feasible list for more than max_attempts = 10^6 attempts. 
     '''
+    # Initialize variables
     list_of_F_lists = []
-    
-    # delta serves to ensure that the sub-inrervals for position angles are pi/3 apart
-    # shift is defined to produce the sub-intervals for position angles from the interval [0,2*pi]
-    # epsilon is defined to shift the angles while attached the force list to the final list of 
-    # force lists
-    # phi_init is defined to help produce the sub-intervals for position angles from the interval
-    # [0, 2*pi]
-    shift = 2 * pi / num_forces
-    epsilon = shift / num_angles_inner
-    phi_init = 0  
-    
-    # alpha_init and alpha_std_dev are parameters for the random normal distribution to produce
-    # tangential angles
-    delta = delta_angle_inner / 2
-    alpha_init = 0
-    alpha_std_dev = pi/12
-    # the std. dev was chosen so that alpha mostly stays within -pi/4 to pi/4, which is
-    # needed because |f_tang| < |f_inner| due to physical constraints
-    
-    # max_attempts is defined to limit the number of attempts to produce a force list given a
-    # starting magnitude. This is done to speed up computations. 
-    max_attempts = 10**6
+    epsilon = 2 * pi / (num_forces * num_angles_inner) # epsilon is defined to shift the position angles while attaching the force list
+    phi_init = 0 # phi_init is defined to help produce the sub-intervals for position angles from the interval
+    delta = delta_angle_inner / 2 # delta serves to ensure that the sub-inrervals for position angles are pi/6 apart
+    alpha_init = 0 # alpha_init and alpha_std_dev are parameters for the random normal distribution to produce tangential angles
+    alpha_std_dev = pi/12 # the std. dev was chosen so that alpha mostly stays within -pi/4 to pi/4
+    max_attempts = 10**6 # max_attempts is defined to limit the number of attempts to produce a force list given a starting magnitude
     
     # draw mean force
     scale = 1 / 2
@@ -123,11 +106,11 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
             attempt_count = 0
             while attempt_count < max_attempts:
                 F_list = []
-                for i in range(num_forces-1):
+                for j in range(num_forces-1):
                     # generate (num_forces - 1) forces acting on particle
                     f_mag = abs(np.random.normal(mag, mag/5))
-                    f_phi = np.random.uniform(phi_init + i * shift + delta, 
-                                            phi_init + (i + 1) * shift - delta) % (2 * pi)
+                    f_phi = np.random.uniform(phi_init + j * shift + delta,
+                                            phi_init + (j + 1) * shift - delta) % (2 * pi)
                     f_alpha = np.random.normal(alpha_init, alpha_std_dev)
                     F_list.append(Force(f_mag, f_phi, f_alpha))
                 # calculate last force to balance the rest
@@ -140,14 +123,11 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                 check += [(f.get_mag() >= 0) for f in F_list]
                 attempt_count+=1
                 
-                if all(check):    
+                if all(check):
                     for ang_inner in range(num_angles_inner):
                         # add num_angles_inner rotations
-                        F_list_new = [Force(f.get_mag(), (f.get_phi()+ang_inner*epsilon)%(2*pi), f.get_alpha())
+                        F_list_new = [Force(f.get_mag(), (f.get_phi() + ang_inner * epsilon) % (2 * pi), f.get_alpha())
                                       for f in F_list]
-                        # add num_random copies of the particle
-                        for rand in range(num_random):
-                            list_of_F_lists.append(F_list_new)   
+                        list_of_F_lists.append(F_list_new)
                     attempt_count = max_attempts
-    
     return list_of_F_lists

@@ -10,21 +10,17 @@ class Particle:
         self.height = height
 
 class Force:
-    """
-        Each force acting on this particle at its boundary is described by three variables 
-    """
+    '''Each force acting on this particle at its boundary is described by three variables. '''
     def __init__(self, magnitude=0, phi=0, alpha=0):
-        """ force magnitude """
+        ''' Force magnitude '''
         self.magnitude = magnitude
-        """ Angle between the origin of XY (center of the particle) and the point of impact
+        ''' Angle between the origin of XY (center of the particle) and the point of impact
             of the force (on the boundary of the particle ) measured counter clockwise from 
-            the x-axis
-        """
+            the x-axis '''
         self.phi = phi
-        """ Impact angle of the force is the angle between the normal of the circle at the force
+        ''' Impact angle of the force is the angle between the normal of the circle at the force
             impact point pointing inward and the direction of the force.
-            It is measured counter clockwise form the inward pointing normal.  
-        """
+            It is measured counter clockwise form the inward pointing normal. '''
         self.alpha = alpha
 
     # Angle between the force vector and the X coordinate measured counter clockwise
