@@ -12,8 +12,8 @@ class GaussBlur:
 
 class DataGenerator:
     ''' Generates augemented data for Keras using the preprocessing function'''
-    def __init__(self, list_image_paths = None,  
-                 dim = None,
+    def __init__(self, list_image_paths,  
+                 dim,
                  n_channels = 3, 
                  rescale = 1, 
                  preprocessing_func = None):
@@ -34,8 +34,7 @@ class DataGenerator:
         for i, image_path in enumerate(self.list_image_paths):
             # Load image and transform
             image = Image.open(os.path.join(image_path))
-            if self.dim is not None:
-                image = image.resize(self.dim, resample = Image.NEAREST)
+            image = image.resize(self.dim, resample = Image.NEAREST)
             image = np.array(image)[:, :, :self.n_channels]
             image = image * self.rescale
             if self.preprocessing_func is not None:
@@ -44,6 +43,22 @@ class DataGenerator:
             X[i,] = image
 
         return X
+    
+    def save(self, path):
+        ''' Saves the images resized and preprocessed into a specified location '''
+
+        # Save data
+        for i, image_path in enumerate(self.list_image_paths):
+            # Load image and transform
+            image = Image.open(os.path.join(image_path))
+            image = image.resize(self.dim, resample = Image.NEAREST)
+            image = np.array(image)[:, :, :self.n_channels]
+            image = image * self.rescale
+            if self.preprocessing_func is not None:
+                image = self.preprocessing_func(image)
+            # Store sample
+            image = Image.fromarray(image)
+            image.save(os.path.join(path, "img" + str(i) + ".jpg"))
 
 def sorter(item):
     ''' Define sorter of image names in order by image number (default is alphanumeric) '''

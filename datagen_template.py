@@ -71,5 +71,5 @@ if __name__ == '__main__':
             plt.imsave(os.path.join(os.getcwd(), 'image_data', subset, str(num_forces), 
                                     'r' + str(r) + '_img' + str(i) + '.jpg'), np.asarray(data[i]), vmin = 0, vmax = 1, cmap = 'gray')
 
-        print(r, num_radius, num_forces, num_mags, num_angles_inner, num_angles_tang, num_random)
+        print(r, num_radius, num_forces, num_mags, num_angles_inner, num_angles_tang)
     

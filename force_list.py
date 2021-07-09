@@ -91,6 +91,7 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
     list_of_F_lists = []
     phi_init = 0 # phi_init is defined to help produce the sub-intervals for position angles from the interval
     delta = delta_angle_inner / 2 # delta serves to ensure that the sub-inrervals for position angles are pi/6 apart
+    shift = 2 * pi / num_forces  # shift is defined to produce the sub-intervals for position angles from the interval [0,2*pi]
     alpha_init = 0 # alpha_init and alpha_std_dev are parameters for the random normal distribution to produce tangential angles
     alpha_std_dev = pi/12 # the std. dev was chosen so that alpha mostly stays within -pi/4 to pi/4
     max_attempts = 10**6 # max_attempts is defined to limit the number of attempts to produce a force list given a starting magnitude
@@ -125,7 +126,8 @@ def list_of_force_angle_lists(num_forces, num_mags, num_angles_tang, num_angles_
                 if all(check):
                     for ang_inner in range(num_angles_inner):
                         # add num_angles_inner rotations
-                        F_list_new = [Force(f.get_mag(), (f.get_phi() + np.random.uniform(0, 2 * pi)) % (2 * pi), f.get_alpha())
+                        rand_ang = np.random.uniform(0, 2 * pi)
+                        F_list_new = [Force(f.get_mag(), (f.get_phi() + rand_ang) % (2 * pi), f.get_alpha())
                                       for f in F_list]
                         list_of_F_lists.append(F_list_new)
                     attempt_count = max_attempts
