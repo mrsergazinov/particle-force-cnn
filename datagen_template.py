@@ -37,7 +37,7 @@ if __name__ == '__main__':
         num_mags = int(sys.argv[2 + num_radius + 2])
         num_angles_inner = int(sys.argv[2 + num_radius + 3])
         num_angles_tang = int(sys.argv[2 + num_radius + 4])
-        subset = sys.argv[2 + num_radius + 5]
+        subset = sys.argv[2 + num_radius + 5]1
 
     #multiprocessing
     num_processes = cpu_count()
