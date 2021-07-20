@@ -5,6 +5,7 @@ This code runs test functions.
 """
 
 import sys
+import pickle
 from functools import partial
 from multiprocessing import Pool, cpu_count
 import matplotlib.pyplot as plt
@@ -46,7 +47,7 @@ if __name__ == '__main__':
     #loading data
     images_names = sorted(os.listdir(images_path_prefix), key = sorter)
     images_path = [os.path.join(images_path_prefix, name) for 
-                   name in sorted(os.listdir(images_path_prefix), key = sorter)]
+                   name in images_names]
     #apply data generators
     params = {'dim': (128, 128), 
               'n_channels': 3, 
@@ -64,18 +65,22 @@ if __name__ == '__main__':
                                                   models_at, models_m)
     F = generate_F_lists(predict_ai, predict_at, predict_m, num_forces)
     
-    #plot predicted images
+    #save predictions
+    with open(os.path.join(images_path_prefix, "position_angles.txt"), "wb") as fp:
+        pickle.dump(predict_ai, fp)
+    with open(os.path.join(images_path_prefix, "tangent_angles.txt"), "wb") as fp:
+        pickle.dump(predict_at, fp)
+    with open(os.path.join(images_path_prefix, "magnitudes.txt"), "wb") as fp:
+        pickle.dump(predict_m, fp)  
+    
+    #save predicted images
     image_gen_preset = partial(photo_elastic_response_on_particle, particle, 
                                f_sigma, pixels_per_radius, cutoff)
     predict_images = np.array(pool.map(image_gen_preset, F))
-    
     for i in range(len(predict_images)):
-        plt.imsave(os.path.join(os.getcwd(), 'big_img' + str(i) + '.jpg'),
-                   np.asarray(predict_images_big[i]), vmin = 0, vmax = 1, cmap = 'gray')
+        plt.imsave(os.path.join(images_path_prefix, 'predicted_' + images_names[i]),
+                   np.asarray(predict_images[i]), vmin = 0, vmax = 1, cmap = 'gray')
     
-    #saving predicted paritcles' images
-    np.save(os.path.join(os.getcwd(), "image_data", "predicted.npy"), predict_images)
-    np.save(os.path.join(os.getcwd(), "image_data", "index_img.npy"), index)
         
 
 
