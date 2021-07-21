@@ -4,6 +4,9 @@
 This code runs test functions.
 """
 
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+import h5py
 import sys
 import pickle
 from functools import partial
@@ -12,20 +15,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from predictions_test_functions import *
 from classes import *
 from photoelastic_response import *
-from predictions_test_functions import *
 from data_loader import *
 
 
 if __name__ == '__main__':
     #path to images: either user or pre-specified
-    images_path_prefix = os.path.join(os.getcwd(), "image_data")
-    if (sys.argv[1] == 'user_input'):
-        images_path_prefix = sys.argv[2]
+    images_path_prefix = os.path.join(os.getcwd(), "image_data", 'pipeline_testing',
+                                      'preprocessed')
+    # if (sys.argv[1] == 'user_input'):
+    #     images_path_prefix = sys.argv[2]
         
     #path to models
-    models_path = os.path.join(os.getcwd(), 'saved_models')
+    models_path = os.path.join(os.getcwd(), 'models')
     
     #number of forces suspected presenet in the images: between 2 and 6
     min_num_forces = 2
@@ -45,7 +49,7 @@ if __name__ == '__main__':
     pool = Pool(processes = num_processes)
     
     #loading data
-    images_names = sorted(os.listdir(images_path_prefix), key = sorter)
+    images_names = sorted(os.listdir(images_path_prefix))
     images_path = [os.path.join(images_path_prefix, name) for 
                    name in images_names]
     #apply data generators
@@ -61,11 +65,10 @@ if __name__ == '__main__':
                                                                 max_num_forces)
     
     #predict contact angles, tangent angles, magnitudes, number of forces for each particle
-    (predict_ai, predict_m, predict_at, num_forces) = predict(X, model_class, models_ai, 
-                                                  models_at, models_m)
+    (predict_ai, predict_at, predict_m, num_forces) = predict(X, model_class, models_ai, models_at, models_m)
     F = generate_F_lists(predict_ai, predict_at, predict_m, num_forces)
     
-    #save predictions
+    # save predictions
     with open(os.path.join(images_path_prefix, "position_angles.txt"), "wb") as fp:
         pickle.dump(predict_ai, fp)
     with open(os.path.join(images_path_prefix, "tangent_angles.txt"), "wb") as fp:
@@ -75,11 +78,11 @@ if __name__ == '__main__':
     
     #save predicted images
     image_gen_preset = partial(photo_elastic_response_on_particle, particle, 
-                               f_sigma, pixels_per_radius, cutoff)
+                                f_sigma, pixels_per_radius, cutoff)
     predict_images = np.array(pool.map(image_gen_preset, F))
     for i in range(len(predict_images)):
         plt.imsave(os.path.join(images_path_prefix, 'predicted_' + images_names[i]),
-                   np.asarray(predict_images[i]), vmin = 0, vmax = 1, cmap = 'gray')
+                    np.asarray(predict_images[i]), vmin = 0, vmax = 1, cmap = 'gray')
     
         
 

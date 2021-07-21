@@ -4,13 +4,7 @@
 This code defines functions to test CNN models on images.
 """
 
-import tensorflow as tf
-""" physical_devices = tf.config.experimental.list_physical_devices('GPU')
-assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
-tf.config.experimental.set_memory_growth(physical_devices[0], True) """
-
-from tensorflow.keras import backend as K
-from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.models import load_model
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,15 +18,15 @@ def load_models(path, min_num_forces, max_num_forces):
     could be acting on the particle. The CNN are loaded using Tensorflow - Keras.
     
     Currently, we have models for  {2,3,4,5,6} forces.'''
-    model_class = load_model(os.path.join(path, 'class_num_forces.h5'))
+    model_class = load_model(os.path.join(path, 'vgg19_num_forces.h5'))
                             
     models_ai = dict()
     models_at = dict()
     models_m = dict()                         
     for i in range(min_num_forces, max_num_forces+1):
-        models_ai[i] = load_model(os.path.join(path, 'reg_num_angles_'+str(i)+'.h5'))
-        models_at[i] = load_model(os.path.join(path, 'reg_num_angles_tang_'+str(i)+'.h5'))
-        models_m[i] = load_model(os.path.join(path, 'reg_num_mags_'+str(i)+'.h5'))
+        models_ai[i] = load_model(os.path.join(path, 'vgg19_angles_inner_'+str(i)+'.h5'))
+        models_at[i] = load_model(os.path.join(path, 'xception_angles_tang_'+str(i)+'.h5'))
+        models_m[i] = load_model(os.path.join(path, 'InceptionResNetV2_mags_'+str(i)+'.h5'))
     return (model_class, models_ai, models_at, models_m)
 
 def predict(X, model_class, models_ai, models_at, models_m):
@@ -43,12 +37,12 @@ def predict(X, model_class, models_ai, models_at, models_m):
     num_forces = model_class.predict(X).argmax(-1)+2
     predict_ai, predict_at, predict_m = list(), list(), list()
     
-    for i in num_forces:
-        predict_ai[i] = models_ai[num_forces[i]].predict(X[None, i, ])[1].tolist()
-        predict_at[i] = models_at[num_forces[i]].predict(X[None, i, ])[1].tolist()
-        predict_m[i] = models_m[num_forces[i]].predict(X[None, i, ])[1].tolist()
+    for i in range(num_forces.shape[0]):
+        predict_ai.append(models_ai[num_forces[i]].predict(X[None, i, ])[0].tolist()) 
+        predict_at.append(models_at[num_forces[i]].predict(X[None, i, ])[0].tolist())
+        predict_m.append(models_m[num_forces[i]].predict(X[None, i, ])[0].tolist())
         
-    return (lai_pred, lm_pred, lat_pred, num_forces)
+    return (predict_ai, predict_at, predict_m, num_forces)
 
 def generate_F_lists(predict_ai, predict_at, predict_m, num_forces): 
     ''' The function outputs the description of the predicted list of forces for each particle. '''
