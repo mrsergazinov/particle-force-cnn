@@ -1,6 +1,7 @@
 import numpy as np
 import os
 from PIL import Image
+from tensorflow.keras.utils import Sequence
 from scipy.ndimage.filters import gaussian_filter
 
 class GaussBlur:
