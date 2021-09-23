@@ -18,5 +18,5 @@ Running the model on the provided test data:
 
 Running the model on other data:
 
-1. Apply steps `1-2` above.
-2. In your terminal application (inside the conda environment you created) type the following command: `python test.py user_input [radius] [min number of forces] [max number of forces] <path to data folder> <path to models folder>`, where you substitute `<>` expressions with the appropriate paths and `[]` with the appropriate numbers based on your data (note: our model currently only supports `radius = 0.008`, `min number of forces > 1`, `max number of forces < 7`).
+1. Apply steps `1-2` above. 
+2. In your terminal application (inside the conda environment you created) type the following command: `python test.py user_input [radius] [min number of forces] [max number of forces] <path to data folder> <path to models folder>`, where you substitute `<>` expressions with the appropriate paths and `[]` with the appropriate numbers based on your data (note: our model currently only supports `radius = 0.008`, `min number of forces > 1`, `max number of forces < 7`). 
