@@ -16,33 +16,33 @@ import numpy as np
 import os
 # internal libs
 from tools.prediction import *
-from tools.classes import *
-from tools.photoelastic import *
-from tools.loader import *
-
 
 if __name__ == '__main__':
-    #path to images: either user or pre-specified
-    images_path_prefix = os.path.join(os.getcwd(), "image_data", 'pipeline_testing',
-                                      'preprocessed')
-    # if (sys.argv[1] == 'user_input'):
-    #     images_path_prefix = sys.argv[2]
-        
-    #path to models
-    models_path = os.path.join(os.getcwd(), 'models')
-    
-    #number of forces suspected presenet in the images: between 2 and 6
-    min_num_forces = 2
-    max_num_forces = 6
-    
     #particle parameters to set
     r = 0.008
-    height = 0.005
+    height = 0.0055
     particle = Particle(r, height)
     f_sigma = 11000
     px2m = 0.00019
     pixels_per_radius = int(round(r / px2m))
     cutoff = np.infty
+
+    #number of forces suspected present in the images: between 2 and 6
+    min_num_forces = 2
+    max_num_forces = 6
+
+    #path to images: either user or pre-specified
+    images_path_prefix = os.path.join(os.getcwd(), "image_data")
+    #path to models
+    models_path = os.path.join(os.getcwd(), 'models')
+
+    # check input is supplied from command line
+    if (sys.argv[1] == 'user_input'):
+        r = int(sys.argv[2])
+        min_num_forces = int(sys.argv[3])
+        max_num_forces = int(sys.argv[4])
+        images_path_prefix = sys.argv[5]
+        models_path = sys.argv[6]
     
     #initializing multiprocessing
     num_processes = cpu_count()
