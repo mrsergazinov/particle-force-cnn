@@ -3,7 +3,7 @@
 """
 This code runs test functions.
 """
-
+# external libs
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 import h5py
@@ -14,11 +14,11 @@ from multiprocessing import Pool, cpu_count
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-
-from predictions_test_functions import *
-from classes import *
-from photoelastic_response import *
-from data_loader import *
+# internal libs
+from tools.prediction import *
+from tools.classes import *
+from tools.photoelastic import *
+from tools.loader import *
 
 
 if __name__ == '__main__':

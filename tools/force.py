@@ -3,12 +3,12 @@ This file contains code to generate a list of forces acting on a circular partic
 the diversity of forces that we want to see in the output. Moreover, all the generated force lists 
 are going to obey the requirments postulated for the uniformly-sized particles.
 """
-
+# external libs
 import numpy as np
 from scipy.stats import truncexpon
 from math import sin, cos, asin, acos, pi, sqrt
-from classes import *
-
+# internal libs
+from tools.classes import *
 
 def angle_finder(cos_val, sin_val):
     '''This function gives the value of the angle in radians from 

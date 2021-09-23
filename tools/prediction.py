@@ -3,14 +3,14 @@
 """
 This code defines functions to test CNN models on images.
 """
-
+# external libs
 from tensorflow.keras.models import load_model
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-
-from classes import *
+# internal libs
+from tools.classes import *
 
 def load_models(path, min_num_forces, max_num_forces):
     ''' Load CNN models from the given path. Min_num_forces and max_num_forces

@@ -9,9 +9,9 @@ We use two types of coordinates:
 
 The photoelastic intensity field is in XY coordinates
 """
-
+# external libs
 import numpy as np
-from classes import *
+from tools.classes import *
 
 def force_impact_point_xy(particle, force):
     '''Returns the xy coordinates of the point at which the force acts
