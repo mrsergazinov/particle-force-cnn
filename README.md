@@ -13,7 +13,7 @@ Photoelastic techniques have a long tradition in both qualitative and quantitati
 Running the model on the provided test data:
 
 1. Install `Anaconda` from [here](https://docs.anaconda.com/anaconda/install/) with Tensorflow ([guide](https://docs.anaconda.com/anaconda/user-guide/tasks/tensorflow/)). Additionally, you may need to install the following packages: `numpy`, `pandas`, `matplotlib`, `scikit-learn`, and `scipy`. 
-2. Clone our repository to your local machine. As part of our paper, we also provide best-performing trained models, which can be downloaded [here](). 
+2. Clone our repository to your local machine. Upon request, we can also provide our best-performing trained models, which we do not publish here due to the size of the files. 
 3. In your terminal application (inside the conda environment you created) type the following command: `python test.py user_input 0.008 2 6 <path to image_data folder> <path to models folder>`, where you substitute `<>` expressions with the appropriate paths.
 
 Running the model on other data:
